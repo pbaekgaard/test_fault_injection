@@ -1,0 +1,6 @@
+CompileFlags:
+  Add:
+    - -I../../share
+    - -Iinclude
+    - -Wall
+    - -Wextra

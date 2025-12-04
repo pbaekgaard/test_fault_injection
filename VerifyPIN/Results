@@ -1,0 +1,73 @@
+Fault model : test inversion
+
+
+Results for the oracle g_authenticated==1
+Line 1 : successfull attacks 
+Line 2 : non-redondant attacks (if an attack succeeds in inverting t1, .., tn this attack 
+is redundant if an attack inverting a strict subset of t1, .., tn succeeds).
+
+
+| Codes            | 1 | 2 |  3 |   4 | sum |   
+|                  |   |   |    |     |     | 
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_0_auth | 2 | 2 |  2 |   3 |   9 |        
+| VerifyPIN_0_auth | 2 | 0 |  0 |   1 |   3 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_1_auth | 2 | 2 |  2 |   3 |   9 |      
+| VerifyPIN_1_auth | 2 | 0 |  0 |   1 |   3 |     
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_2_auth | 2 | 9 | 19 |  21 |  51 |   
+| VerifyPIN_2_auth | 2 | 1 |  0 |   1 |   4 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_3_auth | 2 | 9 | 19 |  21 |  51 |      
+| VerifyPIN_3_auth | 2 | 1 |  0 |   1 |   4 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_4_auth | 2 | 8 | 13 |  16 |  39 |      
+| VerifyPIN_4_auth | 2 | 0 |  1 |   1 |   4 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_5_auth | 0 | 4 | 36 | 157 | 197 |    
+| VerifyPIN_5_auth | 0 | 4 |  4 |   1 |   9 |     
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_6_auth | 0 | 3 |  9 |  20 |  32 |      
+| VerifyPIN_6_auth | 0 | 3 |  0 |   1 |   4 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_7_auth | 0 | 2 |  8 |  13 |  23 |       
+| VerifyPIN_7_auth | 0 | 2 |  0 |   1 |   3 |      
+|------------------+---+---+----+-----+-----+
+
+
+
+
+Results for the oracle g_ptc >= 3
+Line 1 : successfull attacks
+Line 2 : non-redondant attacks
+
+
+| Code             | 1 | 2 |  3 |   4 | sum |   
+|                  |   |   |    |     |     | 
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_0_ptc  | 3 | 2 |  2 |   3 |  10 |      
+| VerifyPIN_0_ptc  | 3 | 0 |  0 |   1 |   4 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_1_ptc  | 3 | 2 |  2 |   3 |  10 |      
+| VerifyPIN_1_ptc  | 3 | 0 |  0 |   1 |   4 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_2_ptc  | 3 | 9 | 19 |  21 |  52 |      
+| VerifyPIN_2_ptc  | 3 | 1 |  0 |   1 |   5 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_3_ptc  | 3 | 9 | 19 |  21 |  52 |      
+| VerifyPIN_3_ptc  | 3 | 1 |  0 |   1 |   5 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_4_ptc  | 3 | 8 | 13 |  16 |  40 |      
+| VerifyPIN_4_ptc  | 3 | 0 |  1 |   1 |   5 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_5_ptc  | 1 | 4 | 36 | 157 | 198 |     
+| VerifyPIN_5_ptc  | 1 | 4 |  4 |   1 |  10 |      
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_6_ptc  | 1 | 3 |  9 |  20 |  33 |      
+| VerifyPIN_6_ptc  | 1 | 3 |  0 |   1 |   5 |       
+|------------------+---+---+----+-----+-----+
+| VerifyPIN_7_ptc  | 1 | 2 |  8 |   13 |  24 |       
+| VerifyPIN_7_ptc  | 1 | 2 |  0 |    1 |   4 |       
+|------------------+---+---+----+-----+-----+
+
