@@ -50,31 +50,7 @@ BOOL verifyPIN() {
         if(stepCounter != 3) {
             countermeasure();
         }
-        /* -------------- FAULT MODEL EXPLANATION (single-bit flip) --------------
-         *
-         * In the binary, the compare + conditional jump compiled from the
-         * "stepCounter != 3" check above has its *jump target* modified by a
-         * single-bit flip (done by ChaosDuck). Conceptually:
-         *
-         *     // BIT FLIPS HERE (in the branch target corresponding to this if)
-         *     if (stepCounter != 3) { countermeasure(); }
-         *     // when stepCounter == 3, control should fall into the loop below
-         *
-         * With the bit flip, when stepCounter == 3 the CPU no longer jumps to
-         * the start of the loop header, but to an instruction *inside* the
-         * compiled loop body.
-         */
         for(i = 0; i < PIN_SIZE; i++) {
-            /*
-             * YOU LAND HERE BECAUSE OF THE BITFLIP:
-             *   In the faulty binary, the modified branch target drops control
-             *   into the middle of the machine code for this loop, skipping
-             *   parts of its normal initialisation / control-flow (e.g.,
-             *   the exact "i = 0" / bounds checks as they should execute).
-             *   At C level, this is equivalent to entering this "for" body
-             *   from above with potentially inconsistent state, which can
-             *   eventually cause g_authenticated to be set even for wrong PINs.
-             */
             if(g_userPin[i] != g_cardPin[i]) {
                 diff = BOOL_TRUE;
             }

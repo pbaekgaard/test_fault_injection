@@ -42,7 +42,7 @@ void initialize()
    }
    // user PIN = 0 0 0 0 0...
    for (i = 0 ; i < PIN_SIZE; ++i) {
-       g_userPin[i] = i+1;
+       g_userPin[i] = 0;
    }
 }
 

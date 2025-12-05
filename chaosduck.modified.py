@@ -289,61 +289,37 @@ def inject_jump_faults(jumps, allinstr, infile, arch):
         # Convert hex string to integer
         num = int(jump["to"], 16)
         # Convert to binary string with leading zeros (16 bits)
-        binary_str = format(num, "016b")
+        binary_str: str = format(num, "016b")
         # Loop over each bit if needed
         for index, bit in enumerate(binary_str):
-            print(binary_str)
-            print(index)
-            print(f"bit before: {bit}")
-            if bit == "0": bit = "1" 
-            else: bit = "0"
-            print(f"bit after: {bit}")
-
-            # if target["addr"] != jump["to"]:
-            #     try:
-            #         for offset in range(0, target["size"]):
-            #             loc = hex(target["addr"] + offset)
-            #             if jump["type"] == ("jmp" or "b"):
-            #                 if offset > 0:
-            #                     type = jump["type"] + "_middlejmp"
-            #                     print(type)
-            #                     fault = {
-            #                         "type": type,
-            #                         "at": jump["from"],
-            #                         "from": jump["to"],
-            #                         "to": loc,
-            #                         "fault": JMP(config, [jump["from"], loc]),
-            #                     }
-            #                 else:
-            #                     fault = {
-            #                         "type": jump["type"],
-            #                         "at": jump["from"],
-            #                         "from": jump["to"],
-            #                         "to": loc,
-            #                         "fault": JMP(config, [jump["from"], loc]),
-            #                     }
-            #             else:
-            #                 if offset > 0:
-            #                     type = jump["type"] + "_middlejmp"
-            #                     fault = {
-            #                         "type": type,
-            #                         "at": jump["from"],
-            #                         "from": jump["to"],
-            #                         "to": loc,
-            #                         "fault": JBE(config, [jump["from"], loc]),
-            #                     }
-            #                 else:
-            #                     fault = {
-            #                         "type": jump["type"],
-            #                         "at": jump["from"],
-            #                         "from": jump["to"],
-            #                         "to": loc,
-            #                         "fault": JBE(config, [jump["from"], loc]),
-            #                     }
-            #             fm_list.append(fault)
-            #     except SystemExit:
-            #         pass  # skip targets causing out of range erors and move on
-
+            flipped_bit = "1" if bit == "0" else "0"
+            new_binary_str = binary_str[:index] + flipped_bit + binary_str[index + 1 :]
+            new_loc = hex(int(new_binary_str, 2))
+            if new_loc != jump["to"]:
+                try:
+                    if jump["type"] == ("jmp" or "b"):
+                        fault = {
+                            "type": jump["type"],
+                            "at": jump["from"],
+                            "from": jump["to"],
+                            "to": new_loc,
+                            "fault": JMP(config, [jump["from"], new_loc]),
+                        }
+                    else:
+                        fault = {
+                            "type": jump["type"],
+                            "at": jump["from"],
+                            "from": jump["to"],
+                            "to": new_loc,
+                            "fault": JBE(config, [jump["from"], new_loc]),
+                        }
+                    fm_list.append(fault)
+                    print(
+                        f"Added fault with old loc: {jump['to']}({binary_str}), "
+                        f"changed to: {new_loc}({new_binary_str})"
+                    )
+                except SystemExit:
+                    pass  # skip targets causing out of range erors and move on
     print("Number of detected jumps: ", len(jumps))
     print("Number of new binaries with changed jumps: ", len(fm_list))
     # create a folder for faulted binaries
@@ -356,6 +332,57 @@ def inject_jump_faults(jumps, allinstr, infile, arch):
             f["from"],
             f["to"],
         )
+        shutil.copy(infile, outfile)
+        with open(outfile, "r+b") as file:
+            f["fault"].apply(file)
+
+
+def inject_flip_je_jne_faults(jumps, infile, arch):
+    """
+    For each individual x86 'je' or 'jne' instruction, create exactly one binary
+    where that instruction's opcode byte is flipped so that:
+      - short 'je' (0x74) becomes 'jne' (0x75), or
+      - short 'jne' (0x75) becomes 'je' (0x74).
+
+    This is implemented as a single-bit flip (bit 0) on the opcode byte using the
+    FLP fault model, and produces one new binary per matching instruction.
+    """
+    if arch != "x86":
+        print("inject_flip_je_jne_faults currently supports only x86.")
+        return
+
+    config = ExecConfig(os.path.expanduser(infile), None, arch, None)
+    fm_list = []
+
+    for jump in jumps:
+        jtype = jump["type"]
+        if jtype not in ("je", "jne"):
+            continue
+
+        # jump['from'] is the instruction address; we target the first opcode byte
+        loc = jump["from"]  # e.g. "0x1234"
+        try:
+            fault = {
+                "type": jtype,
+                "at": loc,
+                "from": jump["to"],
+                "fault": FLP(config, [loc, 0]),  # flip bit 0 of opcode byte
+            }
+            fm_list.append(fault)
+            print(f"Added flip-je/jne fault at {loc} ({jtype})")
+        except SystemExit:
+            # Skip locations that FLP considers invalid/out-of-range
+            pass
+
+    print("Number of conditional je/jne jumps: ", len([j for j in jumps if j["type"] in ("je", "jne")]))
+    print("Number of new binaries with flipped je/jne: ", len(fm_list))
+
+    # create a folder for faulted binaries
+    Path("faulted-binaries").mkdir(parents=True, exist_ok=True)
+
+    # Duplicate the input and then apply the faults
+    for f in fm_list:
+        outfile = "faulted-binaries/flip_%s_at_%s" % (f["type"], f["at"])
         shutil.copy(infile, outfile)
         with open(outfile, "r+b") as file:
             f["fault"].apply(file)
@@ -489,9 +516,8 @@ def run_faulty_binaries(infile, arch):
                         results = pool.imap(func, batch)
                         pool.close()
                         for res in results:
-                            # if '0xba 0xdf 0x00 0xdb 0xad 0xc0 0xff 0xee' in res['stdout']:
-                            # if b'0xba 0xdf 0x00 0xdb 0xad 0xc0 0xff 0xee' in res['stdout']:
-                            # print("BINGO! Plaintext instead of cipher in",res['filename'])
+                            if b"g_authenticated = 1," in res['stdout']:
+                                print("FAULT SUCCESS: authentication bypass detected in", res['filename'])
                             writer.writerow(
                                 [
                                     infile,
@@ -551,7 +577,14 @@ def main(argv):
     elif arch == "arm":
         allinstr, jumps, cmpsmovs = extract_arm_instructions(infile)
     print("Number of detected instructions: ", len(allinstr))
+
+    # Clean output folder if it already exists
+    fb_dir = Path("faulted-binaries")
+    if fb_dir.exists():
+        shutil.rmtree(fb_dir)
+
     inject_jump_faults(jumps, allinstr, infile, arch)
+    inject_flip_je_jne_faults(jumps, infile, arch)
     # inject_zero_faults(cmpsmovs, infile, arch)
     # inject_nop_faults(allinstr, infile, arch)
     # inject_flp_faults(allinstr, infile, arch)

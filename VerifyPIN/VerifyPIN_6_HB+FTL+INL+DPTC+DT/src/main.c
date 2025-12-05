@@ -46,6 +46,6 @@ int main()
     verifyPIN();
     LAZART_ORACLE(oracle());
 
-    printf("[@] g_countermeasure = %i, g_authenticated = %x, g_ptc = %i\n", g_countermeasure, g_authenticated, g_ptc);
+    printf("[@] g_countermeasure = %i, g_authenticated = %x, g_ptc = %i\n", g_countermeasure, oracle(), g_ptc);
     return 0;
 }

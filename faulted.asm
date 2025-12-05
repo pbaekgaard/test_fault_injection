@@ -1,5 +1,5 @@
 
-VerifyPIN/VerifyPIN_7_HB+FTL+INL+DPTC+DT+SC/bin/verifypin_7:     file format elf64-x86-64
+faulted-binaries/flip_je_at_0x12f2:     file format elf64-x86-64
 
 
 Disassembly of section .init:
@@ -226,7 +226,7 @@ Disassembly of section .text:
     12e5:	48 8d 0d 30 2d 00 00 	lea    0x2d30(%rip),%rcx        # 401c <g_cardPin>
     12ec:	0f b6 0c 11          	movzbl (%rcx,%rdx,1),%ecx
     12f0:	39 c8                	cmp    %ecx,%eax
-    12f2:	74 04                	je     12f8 <verifyPIN+0xb8>
+    12f2:	75 04                	jne    12f8 <verifyPIN+0xb8>
     12f4:	c6 45 f2 aa          	movb   $0xaa,-0xe(%rbp)
     12f8:	8b 45 f8             	mov    -0x8(%rbp),%eax
     12fb:	83 c0 01             	add    $0x1,%eax
